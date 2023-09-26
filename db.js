@@ -2,20 +2,19 @@
 
 var mysql      = require('mysql');
 
-const pool = mysql.createPool({
+const connection = mysql.createPool({
   host: '199.247.17.50',
   user: 'pgryvcxxdw',
   password: 'p7jaVFySXr',
   database: 'pgryvcxxdw',
-  port: 3306,
-  connectionLimit:10
+  port: 3306
 });
 
 
 
 
 
-module.exports = pool;
+module.exports = connection;
 
 
 

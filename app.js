@@ -8,22 +8,22 @@ const bodyParser = require('body-parser');
 const jobRoutes = require('./routes/jobs');
 
 
-app.use(morgan('dev'))
-app.use(bodyParser.urlencoded({extended: false}))
-app.use(bodyParser.json())
+// app.use(morgan('dev'))
+// app.use(bodyParser.urlencoded({extended: false}))
+// app.use(bodyParser.json())
 
-app.use( (req,res,next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Headers', '*');
+// app.use( (req,res,next) => {
+//     res.header('Access-Control-Allow-Origin', '*');
+//     res.header('Access-Control-Allow-Headers', '*');
 
-    if (req.method === "OPTIONS") {
-        res.header('Access-Control-Allow-Methods', '*')
-        return res.status(200).json({})
-    }
+//     if (req.method === "OPTIONS") {
+//         res.header('Access-Control-Allow-Methods', '*')
+//         return res.status(200).json({})
+//     }
 
-    next()
+//     next()
 
-})
+// })
 
 app.use('/jobs', jobRoutes)
 
