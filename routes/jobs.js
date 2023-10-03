@@ -1,5 +1,5 @@
 const express = require('express');
-const router = express.Router()
+const router = express.Router() 
 const db = require('../db');
 
 
@@ -37,14 +37,16 @@ router.get("/list/limit/:limit/region/:region/county/:county", (req, res, next) 
 
     if (region === county) {
         // If region and county are the same, use query 1
-        query = 'SELECT job_id, title FROM jobs WHERE place = ? ORDER BY RAND()*2 LIMIT ?';
+        query = 'SELECT job_id, title FROM jobs WHERE place = ? ORDER BY RAND() LIMIT ?';
     } else {
         // If region and county are different, use query 2
-        query = 'SELECT job_id, title FROM jobs WHERE (place = ? OR place = ?) ORDER BY RAND()*2 LIMIT ?';
+        //query = 'SELECT job_id, title FROM jobs WHERE (place = ? OR place = ?) ORDER BY RAND()*2 LIMIT ?';
+        query = 'SELECT * FROM ( SELECT DISTINCT job_id, title FROM jobs WHERE place = ? OR place = ? ) AS subquery ORDER BY RAND()*2 LIMIT ?'
     }
 
 
 
+    /// SELECT * FROM ( SELECT DISTINCT job_id, title FROM jobs WHERE place = ? OR place = ? ) AS subquery ORDER BY RANDOM() LIMIT ?
 
     
 
@@ -54,7 +56,7 @@ router.get("/list/limit/:limit/region/:region/county/:county", (req, res, next) 
     // Obtain a connection from the pool
     db.getConnection((err, connection) => {
 
-        
+         
         if (err) {
             // Handle connection error
             return next(err);
