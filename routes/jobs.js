@@ -5,10 +5,46 @@ const db = require('../db');
 
 
 
+// Function to replace special characters like "ü" with "u"
+function replaceSpecialCharacters(input) {
+    const characterMap = {
+        'ü': 'u',
+        // Add more character replacements as needed
+    };
 
-router.get("/list/limit/:limit", (req, res, next) => {
+    let result = input;
+    for (const [search, replace] of Object.entries(characterMap)) {
+        result = result.replace(new RegExp(search, 'g'), replace);
+    }
+
+    return result;
+}
+
+
+
+
+
+
+router.get("/list/limit/:limit/location/:location", (req, res, next) => {
+
     const limit = parseInt(req.params.limit);
-    const query = 'SELECT job_id,title FROM jobs LIMIT ?';
+    const location = replaceSpecialCharacters(req.params.location);
+
+    let query;
+
+
+    if (location) {
+        // If location is set, use query 1
+        query = 'SELECT job_id, title FROM jobs WHERE place = ? LIMIT ?';
+    } else {
+        // If location is not set, use query 2
+        query = 'SELECT * FROM jobs LIMIT ?';
+    }
+
+
+    
+
+
 
     // Obtain a connection from the pool
     db.getConnection((err, connection) => {
@@ -20,7 +56,9 @@ router.get("/list/limit/:limit", (req, res, next) => {
         }
 
         // Perform the database query
-        connection.query(query, [limit], (error, results, fields) => {
+        const queryParams = location ? [location, limit] : [limit];
+
+        connection.query(query, queryParams, (error, results, fields) => {
             // Release the connection back to the pool
             connection.release();
 
@@ -54,5 +92,9 @@ router.get("/single/:id", (req,res,next) => {
     })
 
 }) 
+
+
+
+
 
 module.exports = router
