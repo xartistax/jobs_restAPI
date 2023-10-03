@@ -37,10 +37,10 @@ router.get("/list/limit/:limit/region/:region/county/:county", (req, res, next) 
 
     if (region === county) {
         // If region and county are the same, use query 1
-        query = 'SELECT job_id, title FROM jobs WHERE place = ? ORDER BY RAND() LIMIT ?';
+        query = 'SELECT job_id, title FROM jobs WHERE place = ? ORDER BY RAND()*2 LIMIT ?';
     } else {
         // If region and county are different, use query 2
-        query = 'SELECT job_id, title FROM jobs WHERE place = ? OR place = ? ORDER BY RAND() LIMIT ?';
+        query = 'SELECT job_id, title FROM jobs WHERE (place = ? OR place = ?) ORDER BY RAND()*2 LIMIT ?';
     }
 
 
