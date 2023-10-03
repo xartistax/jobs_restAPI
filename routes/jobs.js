@@ -41,12 +41,12 @@ router.get("/list/limit/:limit/region/:region/county/:county", (req, res, next) 
     } else {
         // If region and county are different, use query 2
         //query = 'SELECT job_id, title FROM jobs WHERE (place = ? OR place = ?) ORDER BY RAND()*2 LIMIT ?';
-        query = 'SELECT * FROM ( SELECT DISTINCT job_id, title, place FROM jobs WHERE place = ? OR place = ? ) AS subquery ORDER BY RAND()*2 LIMIT ?'
+        query = 'SELECT * FROM ( SELECT DISTINCT job_id, title, place, company_id, company_name, industry_id FROM jobs WHERE place = ? OR place = ? ) AS subquery ORDER BY RAND()*2 LIMIT ?'
     }
 
 
 
-    /// SELECT * FROM ( SELECT DISTINCT job_id, title FROM jobs WHERE place = ? OR place = ? ) AS subquery ORDER BY RANDOM() LIMIT ?
+  
 
     
 
