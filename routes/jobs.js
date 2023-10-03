@@ -25,24 +25,29 @@ function replaceSpecialCharacters(input) {
 
 
 
-router.get("/list/limit/:limit/location/:location", (req, res, next) => {
+router.get("/list/limit/:limit/region/:region/county/:county", (req, res, next) => {
 
     const limit = parseInt(req.params.limit);
-    const location = replaceSpecialCharacters(req.params.location);
+    const region = replaceSpecialCharacters(req.params.region);
+    const county = replaceSpecialCharacters(req.params.county);
+
+
 
     let query;
 
-
-    if (location) {
-        // If location is set, use query 1
-        query = 'SELECT job_id, title FROM jobs WHERE place = ? LIMIT ?';
+    if (region === county) {
+        // If region and county are the same, use query 1
+        query = 'SELECT job_id, title FROM jobs WHERE place = ? ORDER BY RAND() LIMIT ?';
     } else {
-        // If location is not set, use query 2
-        query = 'SELECT * FROM jobs LIMIT ?';
+        // If region and county are different, use query 2
+        query = 'SELECT job_id, title FROM jobs WHERE place = ? OR place = ? ORDER BY RAND() LIMIT ?';
     }
 
 
+
+
     
+
 
 
 
@@ -56,8 +61,7 @@ router.get("/list/limit/:limit/location/:location", (req, res, next) => {
         }
 
         // Perform the database query
-        const queryParams = location ? [location, limit] : [limit];
-
+       const queryParams = region === county ? [region, limit] : [region, county, limit];
         connection.query(query, queryParams, (error, results, fields) => {
             // Release the connection back to the pool
             connection.release();
