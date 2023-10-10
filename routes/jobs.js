@@ -25,9 +25,10 @@ function replaceSpecialCharacters(input) {
 
 
 
-router.get("/list/limit/:limit/region/:region/county/:county", (req, res, next) => {
+router.get("/list/limit/:limit/region/:region/county/:county/industry/:industry", (req, res, next) => {
 
     const limit = parseInt(req.params.limit);
+    const industry_id = parseInt(req.params.industry);
     const region = replaceSpecialCharacters(req.params.region);
     const county = replaceSpecialCharacters(req.params.county);
 
@@ -37,11 +38,11 @@ router.get("/list/limit/:limit/region/:region/county/:county", (req, res, next) 
 
     if (region === county) {
         // If region and county are the same, use query 1
-        query = 'SELECT job_id, title, place FROM jobs WHERE place = ? ORDER BY RAND() LIMIT ?';
+        query = 'SELECT job_id, title, place FROM jobs WHERE place = ? AND industry_id = ? ORDER BY RAND() LIMIT ?';
     } else {
         // If region and county are different, use query 2
         //query = 'SELECT job_id, title FROM jobs WHERE (place = ? OR place = ?) ORDER BY RAND()*2 LIMIT ?';
-        query = 'SELECT * FROM ( SELECT DISTINCT job_id, title, place, company_id, company_name, industry_id FROM jobs WHERE place = ? OR place = ? ) AS subquery ORDER BY RAND()*2 LIMIT ?'
+        query = 'SELECT * FROM ( SELECT DISTINCT job_id, title, place, company_id, company_name, industry_id FROM jobs WHERE (place = ? OR place = ?) AND industry_id = ? ) AS subquery ORDER BY RAND()*2 LIMIT ?'
     }
 
     // Obtain a connection from the pool
@@ -54,7 +55,7 @@ router.get("/list/limit/:limit/region/:region/county/:county", (req, res, next) 
         }
 
         // Perform the database query
-       const queryParams = region === county ? [region, limit] : [region, county, limit];
+       const queryParams = region === county ? [region, industry_id, limit] : [region, county, industry_id, limit];
         connection.query(query, queryParams, (error, results, fields) => {
             // Release the connection back to the pool
             connection.release();
