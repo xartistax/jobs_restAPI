@@ -4,6 +4,7 @@ const morgan = require('morgan')
 const bodyParser = require('body-parser');
 /// Routes
 const jobRoutes = require('./routes/jobs');
+const companyRoutes = require('./routes/companys');
 
 app.use(morgan('dev'))
 app.use(bodyParser.urlencoded({extended: false}))
@@ -22,6 +23,9 @@ app.use( (req,res,next) => {
 
 })
 app.use('/jobs', jobRoutes)
+app.use('/companys', companyRoutes)
+
+
 app.use( (req,res,next) => {
     const error = new Error('Somethings wrong here')
     error.status = 404;

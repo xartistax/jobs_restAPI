@@ -1,48 +1,48 @@
 const express = require('express');
 const router = express.Router() 
 const db = require('../db');
-
-
-
-
-// Function to replace special characters like "ü" with "u"
-function replaceSpecialCharacters(input) {
-    const characterMap = {
-        'ü': 'u',
-        // Add more character replacements as needed
-    };
-
-    let result = input;
-    for (const [search, replace] of Object.entries(characterMap)) {
-        result = result.replace(new RegExp(search, 'g'), replace);
-    }
-
-    return result;
-}
+ 
 
 
 
 
 
 
-router.get("/list/limit/:limit/region/:region/county/:county", (req, res, next) => {
+
+
+
+
+router.get("/list/limit/:limit/industry/:industry/min/:min/max/:max", (req, res, next) => {
 
     const limit = parseInt(req.params.limit);
-    const region = replaceSpecialCharacters(req.params.region);
-    const county = replaceSpecialCharacters(req.params.county);
+    const industry = parseInt(req.params.industry);
+
+    const min = parseInt(req.params.min);
+    const max = parseInt(req.params.max);
+
 
 
 
     let query;
 
-    if (region === county) {
+
         // If region and county are the same, use query 1
-        query = 'SELECT job_id, title, place FROM jobs WHERE place = ? ORDER BY RAND() LIMIT ?';
-    } else {
-        // If region and county are different, use query 2
-        //query = 'SELECT job_id, title FROM jobs WHERE (place = ? OR place = ?) ORDER BY RAND()*2 LIMIT ?';
-        query = 'SELECT * FROM ( SELECT DISTINCT job_id, title, place, company_id, company_name, industry_id FROM jobs WHERE place = ? OR place = ? ) AS subquery ORDER BY RAND()*2 LIMIT ?'
-    }
+
+
+        query = 
+        `   SELECT companys.company_id, companys.name, companys.contact_address, companys.phone, companys.portrait_description, companys.industry, companys.images,
+        COUNT(jobs.company_id) AS job_count
+            FROM companys
+            LEFT JOIN jobs ON companys.company_id = jobs.company_id
+            WHERE jobs.publication_date >= NOW() - INTERVAL 100 DAY OR jobs.publication_date IS NULL
+            GROUP BY companys.company_id, companys.name
+            HAVING job_count > ? AND job_count <= ? AND industry = ? AND portrait_description != 'null'
+            ORDER BY job_count DESC 
+            LIMIT ?
+            `
+         
+
+    
 
     // Obtain a connection from the pool
     db.getConnection((err, connection) => {
@@ -54,7 +54,7 @@ router.get("/list/limit/:limit/region/:region/county/:county", (req, res, next) 
         }
 
         // Perform the database query
-       const queryParams = region === county ? [region, limit] : [region, county, limit];
+       const queryParams = [min,max,industry,limit];
         connection.query(query, queryParams, (error, results, fields) => {
             // Release the connection back to the pool
             connection.release();
@@ -81,7 +81,7 @@ router.get("/list/limit/:limit/region/:region/county/:county", (req, res, next) 
 
 
 router.get("/tmplate", (req, res, next) => {
-    let query = 'SELECT * FROM jobs ORDER BY RAND() LIMIT 1';
+    let query = 'SELECT * FROM companys ORDER BY RAND() LIMIT 1';
 
     // Obtain a connection from the pool
     db.getConnection((err, connection) => {
