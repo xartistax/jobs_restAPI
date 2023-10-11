@@ -38,11 +38,37 @@ router.get("/list/limit/:limit/region/:region/county/:county/industry/:industry"
 
     if (region === county) {
         // If region and county are the same, use query 1
-        query = 'SELECT job_id, title, place FROM jobs WHERE place = ? AND industry_id = ? ORDER BY RAND() LIMIT ?';
+        query = `SELECT job_id, title, place, company_id, company_name, industry_id
+        FROM (
+            SELECT job_id, title, place, company_id, company_name, industry_id, RAND() as r
+            FROM jobs
+            WHERE place = ? AND industry_id = ?
+            ORDER BY r
+        ) AS subquery
+        GROUP BY company_id
+        ORDER BY r
+        LIMIT ?
+        `;
     } else {
         // If region and county are different, use query 2
         //query = 'SELECT job_id, title FROM jobs WHERE (place = ? OR place = ?) ORDER BY RAND()*2 LIMIT ?';
-        query = 'SELECT * FROM ( SELECT DISTINCT job_id, title, place, company_id, company_name, industry_id FROM jobs WHERE (place = ? OR place = ?) AND industry_id = ? ) AS subquery ORDER BY RAND()*2 LIMIT ?'
+        query = `
+        
+
+        SELECT job_id, title, place, company_id, company_name, industry_id
+FROM (
+    SELECT DISTINCT job_id, title, place, company_id, company_name, industry_id, RAND() as r
+    FROM jobs 
+    WHERE (place = ? OR place = ?) AND industry_id = ?
+    ORDER BY r
+) AS subquery
+GROUP BY company_id
+ORDER BY r
+LIMIT ?
+
+        
+        
+        `
     }
 
     // Obtain a connection from the pool
