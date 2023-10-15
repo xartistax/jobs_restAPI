@@ -22,6 +22,63 @@ function replaceSpecialCharacters(input) {
 
 
 
+router.get("/industry/limit/:limit/industry/:industry/region/:region/county/:county", (req, res, next) => {
+    const limit = parseInt(req.params.limit);
+    const industry_id = parseInt(req.params.industry);
+
+    const region = req.params.region ? replaceSpecialCharacters(req.params.region) : null;
+    const county = req.params.county ? replaceSpecialCharacters(req.params.county) : null;
+
+    let query;
+    let queryParams;
+
+    if (region === county || (!region || !county)) {
+        // If region and county are the same, or if one of them is not provided
+        query = `SELECT job_id, title, place, company_id, company_name, industry_id
+        FROM jobs
+        WHERE place = ? AND industry_id = ?
+        ORDER BY publication_date DESC
+        LIMIT ?
+        `;
+        queryParams = [region || county, industry_id, limit];
+    } else {
+        // If region and county are different
+        query = `SELECT DISTINCT job_id, title, place, company_id, company_name, industry_id
+        FROM jobs 
+        WHERE (place = ? OR place = ?) AND industry_id = ?
+        ORDER BY publication_date DESC
+        LIMIT ? `;
+        queryParams = [region, county, industry_id, limit];
+    }
+
+    // Obtain a connection from the pool
+    db.getConnection((err, connection) => {
+        if (err) {
+            // Handle connection error
+            return next(err);
+        }
+
+        // Perform the database query
+        connection.query(query, queryParams, (error, results, fields) => {
+            // Release the connection back to the pool
+            connection.release();
+
+            if (error) {
+                // Handle query error
+                return next(error);
+            } else if (results.length === 0) {
+                return next(error);
+            }
+
+            res.status(200).json({
+                message: "success",
+                results
+            });
+        });
+    });
+});
+
+
 router.get("/list/limit/:limit/industry/:industry", (req, res, next) => {
     const limit = parseInt(req.params.limit);
     const industry_id = parseInt(req.params.industry);
@@ -72,9 +129,6 @@ router.get("/list/limit/:limit/industry/:industry", (req, res, next) => {
 })
 
 
-
-
-// Modify route to handle optional parameters
 router.get("/list/limit/:limit/region/:region/county/:county/industry/:industry", (req, res, next) => {
     
     const limit = parseInt(req.params.limit);
@@ -143,12 +197,6 @@ router.get("/list/limit/:limit/region/:region/county/:county/industry/:industry"
         });
     });
 });
-
-
-
-
-
-
 
 
 router.get("/tmplate", (req, res, next) => {

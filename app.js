@@ -6,6 +6,17 @@ const bodyParser = require('body-parser');
 const jobRoutes = require('./routes/jobs');
 const companyRoutes = require('./routes/companys');
 
+
+
+class NotFoundError extends Error {
+    constructor(message) {
+      super(message);
+      this.name = 'NotFoundError';
+      this.status = 404;
+    }
+  }
+
+
 app.use(morgan('dev'))
 app.use(bodyParser.urlencoded({extended: false}))
 app.use(bodyParser.json())
@@ -39,5 +50,7 @@ app.use( (error , req,res,next) => {
         }
     })
 })
+
+
 
 module.exports = app

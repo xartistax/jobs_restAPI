@@ -30,7 +30,7 @@ router.get("/list/limit/:limit/industry/:industry/min/:min/max/:max", (req, res,
 
 
         query = 
-        `   SELECT companys.company_id, companys.name, companys.contact_address, companys.phone, companys.portrait_description, companys.industry, companys.images,
+        `   SELECT companys.company_id, companys.name, companys.contact_address, companys.phone, companys.portrait_description, companys.industry, companys.images, 
         COUNT(jobs.company_id) AS job_count
             FROM companys
             LEFT JOIN jobs ON companys.company_id = jobs.company_id
