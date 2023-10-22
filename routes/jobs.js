@@ -128,6 +128,71 @@ router.get("/list/limit/:limit/industry/:industry", (req, res, next) => {
     });
 })
 
+router.get("/lehrstellen/limit/:limit/industry/:industry", (req, res, next) => {
+    const limit = parseInt(req.params.limit);
+    const industry_id = parseInt(req.params.industry);
+
+    let query;
+    let queryParams;
+
+    // Conditionally build the query string
+    if (industry_id === 0) {
+        query = `
+            SELECT job_id, title, place, company_id, company_name, industry_id, employment_position_ids, employment_type_ids, education_ids
+            FROM (
+                SELECT job_id, title, place, company_id, company_name, industry_id, employment_position_ids, employment_type_ids, education_ids, RAND() as r
+                FROM jobs
+                WHERE title LIKE '%lehrstellen%' AND template_text LIKE '%lehrstellen%' OR  title LIKE '%EFZ%' AND template_text LIKE '%EFZ%'
+                ORDER BY r
+            ) AS subquery
+            GROUP BY company_id
+            ORDER BY r
+            LIMIT ?
+        `;
+        queryParams = [limit];
+    } else {
+        query = `
+            SELECT job_id, title, place, company_id, company_name, industry_id, employment_position_ids, employment_type_ids, education_ids
+            FROM (
+                SELECT job_id, title, place, company_id, company_name, industry_id, employment_position_ids, employment_type_ids, education_ids, RAND() as r
+                FROM jobs
+                WHERE industry_id = ? AND (title LIKE '%Lehrstelle%' AND template_text LIKE '%Lehrstelle%' OR  title LIKE '%EFZ%' AND template_text LIKE '%EFZ%')
+                ORDER BY r
+            ) AS subquery
+            GROUP BY company_id
+            ORDER BY r
+            LIMIT ?
+        `;
+        queryParams = [industry_id, limit];
+    }
+
+    // Obtain a connection from the pool
+    db.getConnection((err, connection) => {
+        if (err) {
+            // Handle connection error
+            return next(err);
+        }
+
+        // Perform the database query
+        connection.query(query, queryParams, (error, results, fields) => {
+            // Release the connection back to the pool
+            connection.release();
+
+            if (error) {
+                // Handle query error
+                return next(error);
+            } else if (results.length === 0) {
+                return next(error);
+            }
+
+            res.status(200).json({
+                message: "success",
+                results
+            });
+        });
+    });
+});
+
 
 router.get("/list/limit/:limit/region/:region/county/:county/industry/:industry", (req, res, next) => {
     
