@@ -295,7 +295,41 @@ router.get("/tmplate", (req, res, next) => {
 });
 
 
+router.get("/single/:id/", (req, res, next) => {
 
+    let query = `SELECT job_id, title, place, company_id, company_name, industry_id FROM jobs WHERE job_id = ? `;
+
+    const id = req.params.id;
+
+   console.log(id)
+
+    // Obtain a connection from the pool
+    db.getConnection((err, connection) => {
+        if (err) {
+            // Handle connection error
+            return next(err);
+        }
+
+        // Perform the database query
+        connection.query(query, [id], (error, results, fields) => {
+            // Release the connection back to the pool
+            connection.release();
+
+            if (error) {
+                // Handle query error
+                return next(error);
+            } else if (results.length === 0) {
+                return next(error);
+            }
+
+            res.status(200).json({
+                message: "success",
+                results
+            });
+        });
+    });
+
+})
 
 
 
