@@ -301,7 +301,7 @@ router.get("/single/:id/", (req, res, next) => {
 
     const id = req.params.id;
 
-   console.log(id)
+
 
     // Obtain a connection from the pool
     db.getConnection((err, connection) => {
@@ -332,6 +332,61 @@ router.get("/single/:id/", (req, res, next) => {
 })
 
 
+
+router.get("/list/query/:query/", (req, res, next) => {
+
+    
+
+    /**
+     * first split the user's input query into individual words and then create placeholders for each word in the title column. We also create an array of search parameters with '%' wildcard added to each word. Finally, we use the CONCAT function to search for rows where the title column contains any of the words from the user's input query.
+     */
+   
+
+
+    const searchQuery = req.params.query;
+
+    // Split the search query into individual words
+    const searchWords = searchQuery.split(" ");
+
+    // Create an array to hold the placeholders for each word in the search query
+    const placeholders = searchWords.map(() => "?").join(" OR ");
+
+    // Create an array of search parameters by adding '%' wildcard to each word
+    const searchParams = searchWords.map((word) => `%${word}%`);
+
+    let query = `SELECT job_id, title, place, company_id, company_name, industry_id
+        FROM jobs WHERE `;
+    query += `CONCAT(' ', title, ' ') LIKE ${placeholders}`; 
+
+
+
+
+    // Obtain a connection from the pool
+    db.getConnection((err, connection) => {
+        if (err) {
+            // Handle connection error
+            return next(err);
+        }
+
+        // Perform the database query
+        connection.query(query, searchParams, (error, results, fields) => {
+            // Release the connection back to the pool
+            connection.release();
+
+            if (error) {
+                // Handle query error
+                return next(error);
+            } else if (results.length === 0) {
+                return next(error);
+            }
+
+            res.status(200).json({
+                message: "success",
+                results
+            });
+        });
+    });
+})
 
 
 
