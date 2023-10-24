@@ -356,7 +356,7 @@ router.get("/list/query/:query/", (req, res, next) => {
 
     let query = `SELECT job_id, title, place, company_id, company_name, industry_id
         FROM jobs WHERE `;
-    query += `CONCAT(' ', title, ' ') LIKE ${placeholders}`; 
+    query += `CONCAT(' ', title, ' ') LIKE ${placeholders} LIMIT 10`; 
 
 
 
