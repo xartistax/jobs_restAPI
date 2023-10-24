@@ -136,7 +136,7 @@ router.get("/lehrstellen/limit/:limit/industry/:industry", (req, res, next) => {
     let queryParams;
 
     // Conditionally build the query string
-    if (industry_id === 0) {
+    if (industry_id === 999) {
         query = `
             SELECT job_id, title, place, company_id, company_name, industry_id, employment_position_ids, employment_type_ids, education_ids
             FROM (
