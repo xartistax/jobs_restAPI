@@ -335,14 +335,6 @@ router.get("/single/:id/", (req, res, next) => {
 
 router.get("/list/query/:query/", (req, res, next) => {
 
-    
-
-    /**
-     * first split the user's input query into individual words and then create placeholders for each word in the title column. We also create an array of search parameters with '%' wildcard added to each word. Finally, we use the CONCAT function to search for rows where the title column contains any of the words from the user's input query.
-     */
-   
-
-
     const searchQuery = req.params.query;
 
     // Split the search query into individual words
@@ -354,12 +346,18 @@ router.get("/list/query/:query/", (req, res, next) => {
     // Create an array of search parameters by adding '%' wildcard to each word
     const searchParams = searchWords.map((word) => `%${word}%`);
 
-    let query = `SELECT job_id, title, place, company_id, company_name, industry_id
+    // Search in the title field
+    let titleQuery = `SELECT job_id, title, place, company_id, company_name, industry_id
         FROM jobs WHERE `;
-    query += `CONCAT(' ', title, ' ') LIKE ${placeholders} LIMIT 10`; 
+    titleQuery += `CONCAT(' ', title, ' ') LIKE ${placeholders}`;
 
+    // Search in the description field
+    let descriptionQuery = `SELECT job_id, title, place, company_id, company_name, industry_id
+        FROM jobs WHERE `;
+    descriptionQuery += `CONCAT(' ', template_text, ' ') LIKE ${placeholders}`;
 
-
+    // Combine the results of title and description queries using UNION
+    let query = `(${titleQuery}) UNION (${descriptionQuery}) LIMIT 10`;
 
     // Obtain a connection from the pool
     db.getConnection((err, connection) => {
@@ -369,7 +367,7 @@ router.get("/list/query/:query/", (req, res, next) => {
         }
 
         // Perform the database query
-        connection.query(query, searchParams, (error, results, fields) => {
+        connection.query(query, searchParams.concat(searchParams), (error, results, fields) => {
             // Release the connection back to the pool
             connection.release();
 
@@ -386,7 +384,7 @@ router.get("/list/query/:query/", (req, res, next) => {
             });
         });
     });
-})
+});
 
 
 
