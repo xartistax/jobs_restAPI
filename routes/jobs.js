@@ -357,7 +357,7 @@ router.get("/list/query/:query/", (req, res, next) => {
     descriptionQuery += `CONCAT(' ', template_text, ' ') LIKE ${placeholders}`;
 
     // Combine the results of title and description queries using UNION
-    let query = `(${titleQuery}) UNION (${descriptionQuery}) LIMIT 10`;
+    let query = `(${titleQuery}) UNION (${descriptionQuery}) LIMIT 99`;
 
     // Obtain a connection from the pool
     db.getConnection((err, connection) => {
