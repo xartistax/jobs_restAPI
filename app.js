@@ -14,7 +14,7 @@ class NotFoundError extends Error {
       this.name = 'NotFoundError';
       this.status = 404;
     }
-  }
+  } 
 
 
 app.use(morgan('dev'))
